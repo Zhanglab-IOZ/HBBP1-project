@@ -1,0 +1,98 @@
+library(ggplot2);library(dplyr);library(gridExtra)
+
+gene.ds <- read.table("./hg19/Ensembl.ver75.dS.filtered", sep="\t")
+names(gene.ds) <- c("gene1", "gene2", "ds")
+for(i in 1:2){gene.ds[,i] <- as.character(gene.ds[,i])}
+
+test <- read.table("./simulation.run1/simulation.run1.compare.result",sep="\t")
+test[is.na(test)] <- 0
+test.gene <- aggregate(test[, -(1:2)], by=list(test$V1), sum)
+test.gene <- test.gene[rowSums(test.gene[,-1] > 5000) < 1,]
+test.gene[,1] <- as.character(test.gene[,1])
+names(test.gene)[-1] <- c("real", "salmon", "kallisto", "rsem", "Cufflinks")
+gene.ds.tpm <- gene.ds %>% filter(ds <= 0.04, ds > 0) %>% inner_join(test.gene, by=c("gene1" = "Group.1")) %>% inner_join(test.gene, by=c("gene2" = "Group.1"))  %>% filter(real.x + real.y > 2)
+gene.ds.tpm <- gene.ds.tpm %>% mutate( log2fc.real = log2(real.x + 1) - log2(real.y + 1), log2fc.salmon = log2(salmon.x + 1) - log2(salmon.y + 1), log2fc.kallisto = log2(kallisto.x + 1) - log2(kallisto.y + 1), log2fc.rsem = log2(rsem.x + 1) - log2(rsem.y + 1), log2fc.Cufflinks = log2(Cufflinks.x + 1) - log2(Cufflinks.y + 1) )
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.salmon) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.kallisto) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.rsem) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.Cufflinks) <= 1)
+salmon.cor    <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][2] %>% format(digits=2), sep='')
+kallisto.cor  <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][3] %>% format(digits=2), sep='')
+rsem.cor      <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][4] %>% format(digits=2), sep='')
+Cufflinks.cor <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][5] %>% format(digits=2), sep='')
+p1 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.salmon), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=salmon.cor))
+p2 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.kallisto), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=kallisto.cor))
+p3 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.rsem), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=rsem.cor))
+p4 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.Cufflinks), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=Cufflinks.cor))
+
+
+test <- read.table("./simulation.run2/simulation.run2.compare.result",sep="\t")
+test[is.na(test)] <- 0
+test.gene <- aggregate(test[, -(1:2)], by=list(test$V1), sum)
+test.gene <- test.gene[rowSums(test.gene[,-1] > 5000) < 1,]
+test.gene[,1] <- as.character(test.gene[,1])
+names(test.gene)[-1] <- c("real", "salmon", "kallisto", "rsem", "Cufflinks")
+gene.ds.tpm <- gene.ds %>% filter(ds <= 0.04, ds > 0) %>% inner_join(test.gene, by=c("gene1" = "Group.1")) %>% inner_join(test.gene, by=c("gene2" = "Group.1"))  %>% filter(real.x + real.y > 2)
+gene.ds.tpm <- gene.ds.tpm %>% mutate( log2fc.real = log2(real.x + 1) - log2(real.y + 1), log2fc.salmon = log2(salmon.x + 1) - log2(salmon.y + 1), log2fc.kallisto = log2(kallisto.x + 1) - log2(kallisto.y + 1), log2fc.rsem = log2(rsem.x + 1) - log2(rsem.y + 1), log2fc.Cufflinks = log2(Cufflinks.x + 1) - log2(Cufflinks.y + 1) )
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.salmon) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.kallisto) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.rsem) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.Cufflinks) <= 1)
+salmon.cor    <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][2] %>% format(digits=2), sep='')
+kallisto.cor  <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][3] %>% format(digits=2), sep='')
+rsem.cor      <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][4] %>% format(digits=2), sep='')
+Cufflinks.cor <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][5] %>% format(digits=2), sep='')
+p5 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.salmon), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=salmon.cor))
+p6 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.kallisto), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=kallisto.cor))
+p7 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.rsem), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=rsem.cor))
+p8 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.Cufflinks), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=Cufflinks.cor))
+
+
+test <- read.table("./simulation.run3/simulation.run3.compare.result",sep="\t")
+test[is.na(test)] <- 0
+test.gene <- aggregate(test[, -(1:2)], by=list(test$V1), sum)
+test.gene <- test.gene[rowSums(test.gene[,-1] > 5000) < 1,]
+test.gene[,1] <- as.character(test.gene[,1])
+names(test.gene)[-1] <- c("real", "salmon", "kallisto", "rsem", "Cufflinks")
+gene.ds.tpm <- gene.ds %>% filter(ds <= 0.04, ds > 0) %>% inner_join(test.gene, by=c("gene1" = "Group.1")) %>% inner_join(test.gene, by=c("gene2" = "Group.1"))  %>% filter(real.x + real.y > 2)
+gene.ds.tpm <- gene.ds.tpm %>% mutate( log2fc.real = log2(real.x + 1) - log2(real.y + 1), log2fc.salmon = log2(salmon.x + 1) - log2(salmon.y + 1), log2fc.kallisto = log2(kallisto.x + 1) - log2(kallisto.y + 1), log2fc.rsem = log2(rsem.x + 1) - log2(rsem.y + 1), log2fc.Cufflinks = log2(Cufflinks.x + 1) - log2(Cufflinks.y + 1) )
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.salmon) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.kallisto) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.rsem) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.Cufflinks) <= 1)
+salmon.cor    <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][2] %>% format(digits=2), sep='')
+kallisto.cor  <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][3] %>% format(digits=2), sep='')
+rsem.cor      <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][4] %>% format(digits=2), sep='')
+Cufflinks.cor <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][5] %>% format(digits=2), sep='')
+p9  <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.salmon), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=salmon.cor))
+p10 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.kallisto), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=kallisto.cor))
+p11 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.rsem), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=rsem.cor))
+p12 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.Cufflinks), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=Cufflinks.cor))
+
+
+test <- read.table("./simulation.run4/simulation.run4.compare.result",sep="\t")
+test[is.na(test)] <- 0
+test.gene <- aggregate(test[, -(1:2)], by=list(test$V1), sum)
+test.gene <- test.gene[rowSums(test.gene[,-1] > 5000) < 1,]
+test.gene[,1] <- as.character(test.gene[,1])
+names(test.gene)[-1] <- c("real", "salmon", "kallisto", "rsem", "Cufflinks")
+gene.ds.tpm <- gene.ds %>% filter(ds <= 0.04, ds > 0) %>% inner_join(test.gene, by=c("gene1" = "Group.1")) %>% inner_join(test.gene, by=c("gene2" = "Group.1"))  %>% filter(real.x + real.y > 2)
+gene.ds.tpm <- gene.ds.tpm %>% mutate( log2fc.real = log2(real.x + 1) - log2(real.y + 1), log2fc.salmon = log2(salmon.x + 1) - log2(salmon.y + 1), log2fc.kallisto = log2(kallisto.x + 1) - log2(kallisto.y + 1), log2fc.rsem = log2(rsem.x + 1) - log2(rsem.y + 1), log2fc.Cufflinks = log2(Cufflinks.x + 1) - log2(Cufflinks.y + 1) )
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.salmon) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.kallisto) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.rsem) <= 1)
+table(abs(gene.ds.tpm$log2fc.real - gene.ds.tpm$log2fc.Cufflinks) <= 1)
+salmon.cor    <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][2] %>% format(digits=2), sep='')
+kallisto.cor  <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][3] %>% format(digits=2), sep='')
+rsem.cor      <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][4] %>% format(digits=2), sep='')
+Cufflinks.cor <- paste("R=", cor(gene.ds.tpm[, 14:18])[,1][5] %>% format(digits=2), sep='')
+p13 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.salmon), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=salmon.cor))
+p14 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.kallisto), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=kallisto.cor))
+p15 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.rsem), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=rsem.cor))
+p16 <- ggplot(gene.ds.tpm) + geom_point(aes(x=log2fc.real, y=log2fc.Cufflinks), size=1) + theme_bw() + theme(axis.title = element_text(size=18, face=2), axis.text = element_text(size=16))  +  geom_abline(slope=1, intercept=c(0), lty="dashed", col="blue") + xlab("log2(Actual fold change)") + ylab("log2(Inferred fold change)")  + geom_text(aes(x = x, y = y, label = label), size=5.5, data=data.frame(x=-5, y=7.5, label=Cufflinks.cor))
+
+
+pdf("hg19.ver75.dS.bechmark.pdf", width=18,height=18)
+grid.arrange(grobs = list(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16), layout_matrix = matrix(1:16, nrow=4, byrow=T))
+dev.off()
+
