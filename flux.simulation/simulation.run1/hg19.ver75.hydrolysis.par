@@ -1,0 +1,39 @@
+## File locations
+REF_FILE_NAME   ../hg19/Homo_sapiens.GRCh37.75.sorted.gtf
+GEN_DIR         ../hg19/chr_fa
+
+## Expression
+NB_MOLECULES    5000000
+TSS_MEAN        25
+POLYA_SCALE     50
+POLYA_SHAPE     2
+
+## Fragmentation
+FRAG_SUBSTRATE  RNA
+FRAG_METHOD     UR
+FRAG_UR_ETA     300
+FRAG_UR_D0      100
+
+## RT parameters
+RTRANSCRIPTION YES
+RT_MOTIF       default
+RT_PRIMER      RH
+RT_LOSSLESS    YES
+RT_MIN         200
+RT_MAX         12000
+
+## PCR / Filtering
+PCR_DISTRIBUTION  default
+FILTERING         YES
+SIZE_DISTRIBUTION N(300,50)
+SIZE_SAMPLING     AC
+GC_MEAN           NaN
+
+# Sequencing
+READ_NUMBER     20000000
+READ_LENGTH     150
+PAIRED_END      YES
+
+UNIQUE_IDS      YES
+FASTA           YES
+ERR_FILE        76

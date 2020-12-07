@@ -2,11 +2,6 @@
 ###Please make sure the following programms are added in $PATH.
 ###kallisto salmon rsem-prepare-reference rsem-calculate-expression STAR cufflinks
 
-test -d hg19 || mkdir hg19
-test -d simulation.run1 || mkdir simulation.run1
-test -d simulation.run2 || mkdir simulation.run2
-test -d simulation.run3 || mkdir simulation.run3
-test -d simulation.run4 || mkdir simulation.run4
 
 cd ./hg19
 
